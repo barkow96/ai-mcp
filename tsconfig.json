@@ -11,6 +11,6 @@
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true
 	},
-	"include": ["src/**/*"],
+	"include": ["mcp_server/src/**/*"],
 	"exclude": ["node_modules"]
 }

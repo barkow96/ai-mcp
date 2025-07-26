@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "address": "123 Main St, Anytown, USA",
+    "phone": "123-456-7890"
+  },
+  {
+    "id": 2,
+    "name": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "address": "456 Main St, Anytown, USA",
+    "phone": "123-456-7890"
+  },
+  {
+    "id": 3,
+    "name": "John Smith",
+    "email": "john.smith@example.com",
+    "address": "789 Main St, Anytown, USA",
+    "phone": "123-456-7890"
+  },
+  {
+    "id": 4,
+    "name": "John Doe",
+    "email": "user@example.com",
+    "address": "123 Main St",
+    "phone": "123-456-7890"
+  },
+  {
+    "id": 5,
+    "name": "Bart Kart",
+    "email": "my-email@gmail.com",
+    "address": "Street ABC 1",
+    "phone": "123-123-123"
+  },
+  {
+    "id": 6,
+    "name": "Alice Randomson",
+    "email": "random.user123@example.com",
+    "address": "456 Random Ave",
+    "phone": "555-987-6543"
+  }
+]
