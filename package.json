@@ -1,5 +1,23 @@
 {
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0"
-  }
+	"name": "ai-mcp",
+	"version": "1.0.0",
+	"main": "mcp_server/src/server.ts",
+	"scripts": {
+		"server:build": "tsc",
+		"server:build:watch": "tsc --watch",
+		"server:dev": "tsx mcp_server/src/server.ts",
+		"server:inspect": "set DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector npm run server:dev"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"devDependencies": {
+		"@types/node": "^24.1.0",
+		"tsx": "^4.20.3",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.17.0"
+	}
 }
