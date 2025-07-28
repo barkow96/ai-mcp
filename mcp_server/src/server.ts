@@ -1,8 +1,9 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { CreateMessageResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import fs from "node:fs/promises";
 import { z } from "zod";
-import { User } from "./types";
+import { User } from "./types/user.type";
 
 const server = new McpServer({
 	name: "mcp-server",
@@ -81,7 +82,7 @@ server.resource(
 	}
 );
 
-// Tool to generate a text of prompt for creating a fake user (can be used in a chat interface)
+// Prompt feature to generate a text of prompt for creating a fake user (can be used in a chat interface)
 server.prompt("generate-fake-user", "Generate a fake user based on a given name ", { name: z.string() }, ({ name }) => {
 	return {
 		messages: [
@@ -95,6 +96,59 @@ server.prompt("generate-fake-user", "Generate a fake user based on a given name 
 		],
 	};
 });
+
+// Sampling (registered as a tool) to create a random user using the prompt performed on the client
+server.tool(
+	"create-random-user",
+	"Create a random user with fake data",
+	{
+		title: "Create Random User",
+		readOnlyHint: false,
+		destructiveHint: false,
+		idempotentHint: false,
+		openWorldHint: true,
+	},
+	async () => {
+		const res = await server.server.request(
+			{
+				method: "sampling/createMessage",
+				params: {
+					messages: [
+						{
+							role: "user",
+							content: {
+								type: "text",
+								text: "Generate a fake user data. The user should have a realsitic email, address, and phone number. Return this data as a JSON object with no other text or formatter so it can be used with JSON.parse.",
+							},
+						},
+					],
+					maxTokens: 1024,
+				},
+			},
+			CreateMessageResultSchema
+		);
+
+		if (res.content.type !== "text") {
+			return { content: [{ type: "text", text: "Failed to generate user data" }] };
+		}
+
+		try {
+			const fakeUser = JSON.parse(
+				res.content.text
+					.trim()
+					.replace(/^```json/, "")
+					.replace(/```$/, "")
+					.trim()
+			);
+
+			const id = await createUser(fakeUser);
+
+			return { content: [{ type: "text", text: `User ${id} created successfully` }] };
+		} catch {
+			return { content: [{ type: "text", text: "Failed to generate user data" }] };
+		}
+	}
+);
 
 async function createUser(user: User) {
 	const users = await import("./data/users.json", { with: { type: "json" } }).then((m) => m.default);

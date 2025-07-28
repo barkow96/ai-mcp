@@ -40,5 +40,12 @@
     "email": "random.user123@example.com",
     "address": "456 Random Ave",
     "phone": "555-987-6543"
+  },
+  {
+    "id": 7,
+    "name": "Jessica Turner",
+    "email": "jessica.turner82@gmail.com",
+    "address": "1842 Willow Creek Dr, Austin, TX 78745",
+    "phone": "(512) 555-3487"
   }
 ]
