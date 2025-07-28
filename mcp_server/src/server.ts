@@ -1,170 +1,219 @@
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CreateMessageResultSchema } from "@modelcontextprotocol/sdk/types.js";
-import fs from "node:fs/promises";
-import { z } from "zod";
-import { User } from "./types/user.type";
+import {
+  McpServer,
+  ResourceTemplate,
+} from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CreateMessageResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import fs from 'node:fs/promises';
+import { z } from 'zod';
+import { User } from './types/user.type';
 
 const server = new McpServer({
-	name: "mcp-server",
-	version: "1.0.0",
-	capabilities: {
-		resources: {},
-		tools: {},
-		prompts: {},
-	},
+  name: 'mcp-server',
+  version: '1.0.0',
+  capabilities: {
+    resources: {},
+    tools: {},
+    prompts: {},
+  },
 });
 
 // Tool to create a new user in the database
 server.tool(
-	"create-user",
-	"Create a new user in the database",
-	{
-		name: z.string(),
-		email: z.string(),
-		address: z.string(),
-		phone: z.string(),
-	},
-	{
-		title: "Create User",
-		readOnlyHint: false,
-		destructiveHint: false,
-		idempotentHint: false,
-		openWorldHint: true,
-	},
-	async (params) => {
-		try {
-			const id = await createUser(params);
-			return { content: [{ type: "text", text: `User ${id} created successfully` }] };
-		} catch {
-			return { content: [{ type: "text", text: "Failed to save user" }] };
-		}
-	}
+  'create-user',
+  'Create a new user in the database',
+  {
+    name: z.string(),
+    email: z.string(),
+    address: z.string(),
+    phone: z.string(),
+  },
+  {
+    title: 'Create User',
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: true,
+  },
+  async (params) => {
+    try {
+      const id = await createUser(params);
+      return {
+        content: [{ type: 'text', text: `User ${id} created successfully` }],
+      };
+    } catch {
+      return { content: [{ type: 'text', text: 'Failed to save user' }] };
+    }
+  },
 );
 
 // Resource to get all users
 server.resource(
-	"users",
-	"users://all",
-	{
-		description: "Get all users data from the database",
-		title: "Users",
-		mimeType: "application/json",
-	},
-	async (uri) => {
-		const users = await import("./data/users.json", { with: { type: "json" } }).then((m) => m.default);
+  'users',
+  'users://all',
+  {
+    description: 'Get all users data from the database',
+    title: 'Users',
+    mimeType: 'application/json',
+  },
+  async (uri) => {
+    const users = await import('./data/users.json', {
+      with: { type: 'json' },
+    }).then((m) => m.default);
 
-		return { contents: [{ uri: uri.href, text: JSON.stringify(users), mimeType: "application/json" }] };
-	}
+    return {
+      contents: [
+        {
+          uri: uri.href,
+          text: JSON.stringify(users),
+          mimeType: 'application/json',
+        },
+      ],
+    };
+  },
 );
 
 // Resource template to get user details by ID
 server.resource(
-	"user-details",
-	new ResourceTemplate("users://{userId}/profile", { list: undefined }),
-	{
-		description: "Get a user's details from the database",
-		title: "User Details",
-		mimeType: "application/json",
-	},
-	async (uri, { userId }) => {
-		const users = await import("./data/users.json", { with: { type: "json" } }).then((m) => m.default);
+  'user-details',
+  new ResourceTemplate('users://{userId}/profile', { list: undefined }),
+  {
+    description: "Get a user's details from the database",
+    title: 'User Details',
+    mimeType: 'application/json',
+  },
+  async (uri, { userId }) => {
+    const users = await import('./data/users.json', {
+      with: { type: 'json' },
+    }).then((m) => m.default);
 
-		const searchedId = Array.isArray(userId) ? userId[0] : userId;
+    const searchedId = Array.isArray(userId) ? userId[0] : userId;
 
-		const searchedUser = users.find((u) => u.id === parseInt(searchedId));
+    const searchedUser = users.find((u) => u.id === parseInt(searchedId));
 
-		if (!searchedUser) {
-			return { contents: [{ uri: uri.href, text: JSON.stringify({ error: "User not found" }), mimeType: "application/json" }] };
-		}
+    if (!searchedUser) {
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            text: JSON.stringify({ error: 'User not found' }),
+            mimeType: 'application/json',
+          },
+        ],
+      };
+    }
 
-		return { contents: [{ uri: uri.href, text: JSON.stringify(searchedUser), mimeType: "application/json" }] };
-	}
+    return {
+      contents: [
+        {
+          uri: uri.href,
+          text: JSON.stringify(searchedUser),
+          mimeType: 'application/json',
+        },
+      ],
+    };
+  },
 );
 
 // Prompt feature to generate a text of prompt for creating a fake user (can be used in a chat interface)
-server.prompt("generate-fake-user", "Generate a fake user based on a given name ", { name: z.string() }, ({ name }) => {
-	return {
-		messages: [
-			{
-				role: "user",
-				content: {
-					type: "text",
-					text: `Generate a fake user with the name ${name}. The user should have a realsitic email, address, and phone number.`,
-				},
-			},
-		],
-	};
-});
+server.prompt(
+  'generate-fake-user',
+  'Generate a fake user based on a given name ',
+  { name: z.string() },
+  ({ name }) => {
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Generate a fake user with the name ${name}. The user should have a realsitic email, address, and phone number.`,
+          },
+        },
+      ],
+    };
+  },
+);
 
 // Sampling (registered as a tool) to create a random user using the prompt performed on the client
 server.tool(
-	"create-random-user",
-	"Create a random user with fake data",
-	{
-		title: "Create Random User",
-		readOnlyHint: false,
-		destructiveHint: false,
-		idempotentHint: false,
-		openWorldHint: true,
-	},
-	async () => {
-		const res = await server.server.request(
-			{
-				method: "sampling/createMessage",
-				params: {
-					messages: [
-						{
-							role: "user",
-							content: {
-								type: "text",
-								text: "Generate a fake user data. The user should have a realsitic email, address, and phone number. Return this data as a JSON object with no other text or formatter so it can be used with JSON.parse.",
-							},
-						},
-					],
-					maxTokens: 1024,
-				},
-			},
-			CreateMessageResultSchema
-		);
+  'create-random-user',
+  'Create a random user with fake data',
+  {
+    title: 'Create Random User',
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: true,
+  },
+  async () => {
+    const res = await server.server.request(
+      {
+        method: 'sampling/createMessage',
+        params: {
+          messages: [
+            {
+              role: 'user',
+              content: {
+                type: 'text',
+                text: 'Generate a fake user data. The user should have a realsitic email, address, and phone number. Return this data as a JSON object with no other text or formatter so it can be used with JSON.parse.',
+              },
+            },
+          ],
+          maxTokens: 1024,
+        },
+      },
+      CreateMessageResultSchema,
+    );
 
-		if (res.content.type !== "text") {
-			return { content: [{ type: "text", text: "Failed to generate user data" }] };
-		}
+    if (res.content.type !== 'text') {
+      return {
+        content: [{ type: 'text', text: 'Failed to generate user data' }],
+      };
+    }
 
-		try {
-			const fakeUser = JSON.parse(
-				res.content.text
-					.trim()
-					.replace(/^```json/, "")
-					.replace(/```$/, "")
-					.trim()
-			);
+    try {
+      const fakeUser = JSON.parse(
+        res.content.text
+          .trim()
+          .replace(/^```json/, '')
+          .replace(/```$/, '')
+          .trim(),
+      );
 
-			const id = await createUser(fakeUser);
+      const id = await createUser(fakeUser);
 
-			return { content: [{ type: "text", text: `User ${id} created successfully` }] };
-		} catch {
-			return { content: [{ type: "text", text: "Failed to generate user data" }] };
-		}
-	}
+      return {
+        content: [{ type: 'text', text: `User ${id} created successfully` }],
+      };
+    } catch {
+      return {
+        content: [{ type: 'text', text: 'Failed to generate user data' }],
+      };
+    }
+  },
 );
 
 async function createUser(user: User) {
-	const users = await import("./data/users.json", { with: { type: "json" } }).then((m) => m.default);
+  const users = await import('./data/users.json', {
+    with: { type: 'json' },
+  }).then((m) => m.default);
 
-	const id = users.length + 1;
+  const id = users.length + 1;
 
-	users.push({ id, ...user });
+  users.push({ id, ...user });
 
-	fs.writeFile("./mcp_server/src/data/users.json", JSON.stringify(users, null, 2));
+  fs.writeFile(
+    './mcp_server/src/data/users.json',
+    JSON.stringify(users, null, 2),
+  );
 
-	return id;
+  return id;
 }
 
 async function main() {
-	const transport = new StdioServerTransport();
-	await server.connect(transport);
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
 }
 
 main();
