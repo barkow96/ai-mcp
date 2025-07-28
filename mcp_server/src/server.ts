@@ -14,6 +14,7 @@ const server = new McpServer({
 	},
 });
 
+// Tool to create a new user in the database
 server.tool(
 	"create-user",
 	"Create a new user in the database",
@@ -79,6 +80,21 @@ server.resource(
 		return { contents: [{ uri: uri.href, text: JSON.stringify(searchedUser), mimeType: "application/json" }] };
 	}
 );
+
+// Tool to generate a text of prompt for creating a fake user (can be used in a chat interface)
+server.prompt("generate-fake-user", "Generate a fake user based on a given name ", { name: z.string() }, ({ name }) => {
+	return {
+		messages: [
+			{
+				role: "user",
+				content: {
+					type: "text",
+					text: `Generate a fake user with the name ${name}. The user should have a realsitic email, address, and phone number.`,
+				},
+			},
+		],
+	};
+});
 
 async function createUser(user: User) {
 	const users = await import("./data/users.json", { with: { type: "json" } }).then((m) => m.default);
