@@ -3,6 +3,7 @@ import { confirm, input, select } from '@inquirer/prompts';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import {
+  CreateMessageRequestSchema,
   Prompt,
   PromptMessage,
   Tool,
@@ -36,6 +37,27 @@ async function main() {
       client.listResources(),
       client.listResourceTemplates(),
     ]);
+
+  // TODO: This is to be improved as it throws an error
+  try {
+    client.setRequestHandler(CreateMessageRequestSchema, async (request) => {
+      const texts: string[] = [];
+
+      for (const message of request.params.messages) {
+        const text = await handleServerMessagePrompt(message);
+        if (text) texts.push(text);
+      }
+
+      return {
+        role: 'user',
+        model: 'gemini-2.0-flash',
+        stopReason: 'endTurn',
+        content: { type: 'text', text: texts.join('\n') },
+      };
+    });
+  } catch {
+    console.error('Error setting request handler.');
+  }
 
   console.log('You are connected!');
 
