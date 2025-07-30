@@ -43,9 +43,9 @@
   },
   {
     "id": 7,
-    "name": "name123",
-    "email": "email123",
-    "address": "address123",
-    "phone": "100-100-100"
+    "name": "ABC1",
+    "email": "abc@abc.com",
+    "address": "Street 15/12A",
+    "phone": "123-123-123"
   }
 ]
