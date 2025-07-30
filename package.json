@@ -7,6 +7,7 @@
     "server:build:watch": "tsc --watch",
     "server:dev": "tsx mcp_server/src/server.ts",
     "server:inspect": "set DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector npm run server:dev",
+    "client:dev": "tsx mcp_client/src/client.ts",
     "format": "prettier --write ."
   },
   "keywords": [],
