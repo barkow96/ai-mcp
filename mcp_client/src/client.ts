@@ -47,7 +47,6 @@ async function main() {
             description: tool.description,
           })),
         });
-        console.log(toolName);
 
         const tool = tools.find((t) => t.name === toolName);
 
@@ -55,6 +54,40 @@ async function main() {
           console.error('Tool not found.');
         } else {
           await handleTool(tool);
+        }
+        break;
+
+      case 'Resources':
+        const resourceUri = await select({
+          message: 'Select a resource:',
+          choices: [
+            ...resources.map((resource) => ({
+              name: resource.name,
+              value: resource.uri,
+              description: resource.description,
+            })),
+            ...resourceTemplates.map((template) => ({
+              name: template.name,
+              value: template.uriTemplate,
+              description: template.description,
+            })),
+          ],
+        });
+
+        const foundResourceUri = resources.find(
+          (r) => r.uri === resourceUri,
+        )?.uri;
+
+        const foundResourceTemplateUri = resourceTemplates.find(
+          (t) => t.uriTemplate === resourceUri,
+        )?.uriTemplate;
+
+        const uri = foundResourceUri ?? foundResourceTemplateUri;
+
+        if (!uri) {
+          console.error('Resource not found.');
+        } else {
+          await handleResource(uri);
         }
         break;
     }
@@ -75,6 +108,28 @@ async function handleTool(tool: Tool) {
   const res = await client.callTool({ name: tool.name, arguments: args });
 
   console.log((res.content as [{ text: string }])[0].text);
+}
+
+async function handleResource(uri: string) {
+  let finalUri = uri;
+  const paramMatches = uri.match(/{([^}]+)}/g);
+
+  if (paramMatches) {
+    for (const paramMatch of paramMatches) {
+      const paramName = paramMatch.replace('{', '').replace('}', '');
+      const paramValue = await input({
+        message: `Enter value for ${paramName}`,
+      });
+
+      finalUri = finalUri.replace(paramMatch, paramValue);
+    }
+  }
+
+  const res = await client.readResource({ uri: finalUri });
+
+  console.log(
+    JSON.stringify(JSON.parse(res.contents[0].text as string), null, 2),
+  );
 }
 
 main();
