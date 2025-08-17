@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import 'dotenv/config';
+import { GOOGLE_MODEL_NAME } from './config';
 
 let google: ReturnType<typeof createGoogleGenerativeAI> | null = null;
 
@@ -10,14 +11,17 @@ export function getGoogle() {
       apiKey: process.env.GEMINI_API_KEY,
     });
   }
+
   return google;
 }
 
 export async function generateAiText(prompt: string): Promise<string> {
   const google = getGoogle();
+
   const { text } = await generateText({
-    model: google('gemini-2.0-flash'),
+    model: google(GOOGLE_MODEL_NAME),
     prompt,
   });
+
   return text;
 }

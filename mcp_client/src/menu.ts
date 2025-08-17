@@ -6,6 +6,7 @@ import {
   handleTool,
 } from './handlers';
 import { getMcpClient } from './mcp';
+import { MenuOption, OMenuOption } from './types';
 
 export async function runMenu() {
   const client = getMcpClient();
@@ -19,13 +20,13 @@ export async function runMenu() {
     ]);
 
   while (true) {
-    const option = await select({
+    const option = await select<MenuOption>({
       message: 'What would you like to do?',
-      choices: ['Query', 'Tools', 'Resources', 'Prompts'],
+      choices: Object.values(OMenuOption),
     });
 
     switch (option) {
-      case 'Tools':
+      case OMenuOption.Tools:
         const toolName = await select({
           message: 'Select a tool:',
           choices: tools.map((tool) => ({
@@ -41,7 +42,7 @@ export async function runMenu() {
         else await handleTool(tool);
         break;
 
-      case 'Resources':
+      case OMenuOption.Resources:
         const resourceUri = await select({
           message: 'Select a resource:',
           choices: [
@@ -71,7 +72,7 @@ export async function runMenu() {
         else await handleResource(uri);
         break;
 
-      case 'Prompts':
+      case OMenuOption.Prompts:
         const promptName = await select({
           message: 'Select a prompt:',
           choices: prompts.map((prompt) => ({
@@ -87,7 +88,7 @@ export async function runMenu() {
         else await handlePrompt(prompt);
         break;
 
-      case 'Query':
+      case OMenuOption.Query:
         await handleQuery(tools);
         break;
     }

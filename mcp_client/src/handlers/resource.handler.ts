@@ -3,6 +3,7 @@ import { getMcpClient } from '../mcp';
 
 export async function handleResource(uri: string) {
   let finalUri = uri;
+
   const paramMatches = uri.match(/{([^}]+)}/g);
   if (paramMatches) {
     for (const paramMatch of paramMatches) {
@@ -13,6 +14,7 @@ export async function handleResource(uri: string) {
       finalUri = finalUri.replace(paramMatch, paramValue);
     }
   }
+
   const res = await getMcpClient().readResource({ uri: finalUri });
   console.log(
     JSON.stringify(JSON.parse(res.contents[0].text as string), null, 2),

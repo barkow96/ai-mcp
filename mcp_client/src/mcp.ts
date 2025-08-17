@@ -12,11 +12,13 @@ export function getMcpClient(): Client | never {
 
 export async function initMcpClient(): Promise<Client> {
   if (client) return client;
+
   const newClient = new Client({
     name: 'mcp-client',
     version: '1.0.0',
     capabilities: { sampling: {} },
   });
+
   const newTransport = new StdioClientTransport({
     command: 'node',
     args: ['mcp_server/build/server.js'],

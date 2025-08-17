@@ -2,6 +2,7 @@ import { input } from '@inquirer/prompts';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { generateText, jsonSchema, ToolSet } from 'ai';
 import { getGoogle } from '../ai';
+import { GOOGLE_MODEL_NAME } from '../config';
 import { getMcpClient } from '../mcp';
 
 export async function handleQuery(tools: Tool[]) {
@@ -9,7 +10,7 @@ export async function handleQuery(tools: Tool[]) {
   const google = getGoogle();
 
   const { text, toolResults } = await generateText({
-    model: google('gemini-2.0-flash'),
+    model: google(GOOGLE_MODEL_NAME),
     prompt: query,
     tools: tools.reduce(
       (obj, tool) => ({

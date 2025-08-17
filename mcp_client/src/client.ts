@@ -7,7 +7,6 @@ async function main() {
   await initMcpClient();
 
   registerSamplingHandler();
-  console.log('You are connected!');
 
   await runMenu();
 }
