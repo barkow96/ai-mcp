@@ -18,6 +18,7 @@ This repository demonstrates a minimal-but-practical setup for the Model Context
   - Connects to the server over stdio
   - Lists and invokes Tools, Resources, and Prompts via a terminal menu
   - Runs free-form queries with LLM tool use (the model can call server tools during generation)
+  - Supports sampling requests from the server
 
 ## Project Structure
 
@@ -25,16 +26,26 @@ This repository demonstrates a minimal-but-practical setup for the Model Context
 6_AI_model_context_protocol/
   mcp_server/
     src/
-      data/users.json            # Simple JSON “database”
-      server.ts                  # Server bootstrap; registers resources/tools/prompts
-      resources/                 # Resource registrations
-      tools/                     # Tool registrations
-      prompts/                   # Prompt registrations
-      types/                     # Shared types (e.g., User)
+      data/                          # Simple JSON "database"
+      helpers/                       # User management utilities
+      prompts/                       # Prompt template definitions
+      resources/                     # Resource implementations
+      tools/                         # Tool implementations
+      types/                         # Shared type definitions
+      server.ts                      # Server bootstrap
   mcp_client/
-    src/client.ts                # Interactive CLI client
-  package.json                   # Scripts for dev/build/run
-  tsconfig.json                  # TypeScript config
+    src/
+      config/                        # Global configuration
+      handlers/                      # MCP interaction handlers
+      mappers/                       # Type validation utilities
+      sampling/                      # Sampling request handling
+      types/                         # TypeScript type definitions
+      ai.ts                          # AI/LLM integration
+      client.ts                      # CLI client entry point
+      mcp.ts                         # MCP client management
+      menu.ts                        # Interactive menu system
+  package.json                       # Scripts for dev/build/run
+  tsconfig.json                      # TypeScript config
 ```
 
 ## Requirements
@@ -43,6 +54,7 @@ This repository demonstrates a minimal-but-practical setup for the Model Context
 - npm 9+
 - A Google Gemini API key for the client
   - Set `GEMINI_API_KEY` in your environment (e.g., a `.env` file)
+  - You can obtain a key from Google AI Studio (see Google's documentation)
 
 ## Setup
 
@@ -57,7 +69,7 @@ This repository demonstrates a minimal-but-practical setup for the Model Context
      ```env
      GEMINI_API_KEY=your_google_gemini_api_key
      ```
-   - You can obtain a key from Google AI Studio (see Google’s documentation).
+   - You can obtain a key from Google AI Studio (see Google's documentation).
 
 ## Build and Run
 
@@ -89,13 +101,13 @@ Optional (standalone server run and inspection):
 
 ## Using the Client
 
-When the client starts you’ll see a menu with four options:
+When the client starts you'll see a menu with four options:
 
 - **Tools**
-  - Select a tool to run. You’ll be prompted for its arguments.
+  - Select a tool to run. You'll be prompted for its arguments.
   - Provided tools:
     - `create-user`: Enter `name`, `email`, `address`, `phone` to create a user.
-    - `create-random-user`: The server requests a sampled user from the client’s LLM, then saves it.
+    - `create-random-user`: The server requests a sampled user from the client's LLM, then saves it.
 
 - **Resources**
   - Browse server resources. If a resource has path parameters (e.g., `{userId}`), the client will prompt you for values.
@@ -114,16 +126,38 @@ When the client starts you’ll see a menu with four options:
 - User data is stored in `mcp_server/src/data/users.json`.
 - Tools that modify users will persist changes back to this file.
 
-## Extending the Server
+## Architecture Details
 
-- Add a new Resource/Tool/Prompt by creating a registration module under `mcp_server/src/resources`, `mcp_server/src/tools`, or `mcp_server/src/prompts`, and register it from `server.ts` (or the corresponding barrel if present).
-- Keep business logic separate from registration code to maintain readability and testability.
+### Client Architecture
 
-## NPM Scripts
+The client is organized into several key modules:
 
-- `server:build` – Compile the MCP server to JavaScript
-- `server:build:watch` – Compile the server in watch mode
-- `server:dev` – Run the TypeScript server with `tsx`
-- `server:inspect` – Launch the MCP Inspector against the dev server
-- `client:dev` – Run the interactive MCP client
-- `format` – Run Prettier across the repo
+- **`handlers/`**: Contains logic for handling different types of MCP interactions (tools, resources, prompts, queries)
+- **`config/`**: Global configuration including AI model settings
+- **`types/`**: TypeScript type definitions for the application
+- **`mappers/`**: Utility functions for type validation and conversion
+- **`sampling/`**: Handles sampling requests from the server
+- **`ai.ts`**: Integration with Google Gemini AI
+- **`mcp.ts`**: MCP client initialization and connection management
+- **`menu.ts`**: Interactive menu system for user interaction
+
+### Server Architecture
+
+The server follows a modular structure:
+
+- **`tools/`**: Tool implementations (create-user, create-random-user)
+- **`resources/`**: Resource implementations (user data access)
+- **`prompts/`**: Prompt template definitions
+- **`helpers/`**: Utility functions for data management
+- **`data/`**: Simple JSON-based data storage
+- **`types/`**: Shared type definitions
+
+### AI Integration
+
+The client uses Google Gemini 2.0 Flash model for:
+
+- Free-form queries with tool support
+- Prompt execution
+- Sampling requests from the server
+
+The integration is handled through the `ai` SDK and configured via environment variables.
