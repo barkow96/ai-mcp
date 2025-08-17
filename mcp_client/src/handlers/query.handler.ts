@@ -4,6 +4,7 @@ import { generateText, jsonSchema, ToolSet } from 'ai';
 import { getGoogle } from '../ai';
 import { GOOGLE_MODEL_NAME } from '../config';
 import { getMcpClient } from '../mcp';
+import { ToolResult } from '../types';
 
 export async function handleQuery(tools: Tool[]) {
   const query = await input({ message: 'Enter your query:' });
@@ -29,8 +30,10 @@ export async function handleQuery(tools: Tool[]) {
       {} as ToolSet,
     ),
   });
-  console.log(
-    // @ts-ignore
-    text || toolResults[0]?.result?.content[0]?.text || 'No text generated.',
-  );
+
+  console.log(text || getToolResultText(toolResults) || 'No text generated.');
+}
+
+function getToolResultText(toolResults: unknown): string {
+  return (toolResults as ToolResult)[0]?.result?.content[0]?.text || '';
 }

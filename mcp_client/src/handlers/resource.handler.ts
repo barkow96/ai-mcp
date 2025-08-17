@@ -1,4 +1,5 @@
 import { input } from '@inquirer/prompts';
+import { assureString } from '../mappers';
 import { getMcpClient } from '../mcp';
 
 export async function handleResource(uri: string) {
@@ -16,7 +17,7 @@ export async function handleResource(uri: string) {
   }
 
   const res = await getMcpClient().readResource({ uri: finalUri });
-  console.log(
-    JSON.stringify(JSON.parse(res.contents[0].text as string), null, 2),
-  );
+
+  const text = assureString(res.contents[0].text);
+  console.log(JSON.stringify(JSON.parse(text), null, 2));
 }
